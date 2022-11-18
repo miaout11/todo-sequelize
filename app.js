@@ -1,10 +1,10 @@
 // Include packages and define server related variables
 const express = require('express')
 const session = require('express-session')
-const passport = require('passport') // 暫時設定，為了驗證登入狀態
 const exphbs = require('express-handlebars')
 const methodOverride = require('method-override')
-const bcrypt = require('bcryptjs')
+const flash = require('connect-flash')
+
 const db = require('./models')
 const Todo = db.Todo
 const User = db.User
@@ -33,12 +33,15 @@ app.use(methodOverride('_method'))
 // 呼叫 Passport 函式並傳入 app，這條要寫在路由之前
 usePassport(app)
 
+// use connect-flash
+app.use(flash())
+
 // 放在res.locals的資料，讓 view 可以存取
 app.use((req, res, next) => {
   res.locals.isAuthenticated = req.isAuthenticated()
   res.locals.user = req.user
-  // res.locals.success_msg = req.flash('success_msg')
-  // res.locals.warning_msg = req.flash('warning_msg')
+  res.locals.success_msg = req.flash('success_msg')
+  res.locals.warning_msg = req.flash('warning_msg')
   next()
 })
 
