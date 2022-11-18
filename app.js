@@ -30,9 +30,16 @@ app.get('/', (req, res) => {
     .catch((error) => { return res.status(422).json(error) })
 })
 
-app.get('/', (req, res) => {
-  res.send('hello world')
+app.get('/todos/:id', (req, res) => {
+  const id = req.params.id
+  return Todo.findByPk(id)
+    // 把資料轉換成 plain object 的方法，只需要直接在傳入樣板前加上 toJSON()
+    .then(todo => res.render('detail', { todo: todo.toJSON() }))
+    .catch(error => console.log(error))
 })
+
+// 查詢多筆資料：要在 findAll({ raw: true, nest: true}) 直接傳入參數
+// 查詢單筆資料：要在 res.render 時在物件實例 todo 後串上 todo.toJSON()。
 
 app.get('/users/login', (req, res) => {
   res.render('login')
