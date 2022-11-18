@@ -33,6 +33,15 @@ app.use(methodOverride('_method'))
 // 呼叫 Passport 函式並傳入 app，這條要寫在路由之前
 usePassport(app)
 
+// 放在res.locals的資料，讓 view 可以存取
+app.use((req, res, next) => {
+  res.locals.isAuthenticated = req.isAuthenticated()
+  res.locals.user = req.user
+  // res.locals.success_msg = req.flash('success_msg')
+  // res.locals.warning_msg = req.flash('warning_msg')
+  next()
+})
+
 // setting routes
 app.use(routes)
 
