@@ -55,8 +55,29 @@ app.get('/users/register', (req, res) => {
 
 app.post('/users/register', (req, res) => {
   const { name, email, password, confirmPassword } = req.body
-  User.create({ name, email, password })
-    .then(user => res.render('/'))
+  // MySQL 會使用 WHERE 來加入條件語句，在 Sequelize 裡，就會變成在參數裡加上 where，可以根據我們指令的條件(這裡是email)來尋找(user是否已存在)資料。
+  User.findOne({ where: { email } })
+    .then(user => {
+      if (user) {
+        console.log('User already exists!')
+        return res.render('register', {
+          name,
+          email,
+          password,
+          confirmPassword
+        })
+      }
+      return bcrypt
+        .genSalt(10)
+        .then(salt => bcrypt.hash(password, salt))
+        .then(hash => User.create({
+          name,
+          email,
+          password: hash
+        }))
+        .then(() => res.redirect('/'))
+        .catch(error => console.log(error))
+    })
 })
 
 app.get('/users/logout', (req, res) => {
