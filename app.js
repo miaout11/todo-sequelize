@@ -1,5 +1,7 @@
 // Include packages and define server related variables
 const express = require('express')
+const session = require('express-session')
+const passport = require('passport') // 暫時設定，為了驗證登入狀態
 const exphbs = require('express-handlebars')
 const methodOverride = require('method-override')
 const bcrypt = require('bcryptjs')
@@ -9,14 +11,25 @@ const User = db.User
 
 const app = express()
 const PORT = 3000
+// 載入passport 設定檔要寫在 express-session 後面
+const usePassport = require('./config/passport')
 
 // setting template engine
 app.engine('hbs', exphbs({ defaultLayout: 'main', extname: '.hbs' }))
 app.set('view engine', 'hbs')
+// setting session
+app.use(session({
+  secret: 'ThisIsMySecret',
+  resave: false,
+  saveUninitialized: true
+}))
 // setting body-parser
 app.use(express.urlencoded({ extended: true }))
 // setting methodOverride
 app.use(methodOverride('_method'))
+
+// 呼叫 Passport 函式並傳入 app，這條要寫在路由之前
+usePassport(app)
 
 // setting routes
 app.get('/', (req, res) => {
@@ -45,9 +58,10 @@ app.get('/users/login', (req, res) => {
   res.render('login')
 })
 
-app.post('/users/login', (req, res) => {
-  res.send('login')
-})
+app.post('/users/login', passport.authenticate('local', {
+  successRedirect: '/',
+  failureRedirect: '/users/login'
+}))
 
 app.get('/users/register', (req, res) => {
   res.render('register')
